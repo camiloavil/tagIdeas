@@ -7,8 +7,8 @@ from typing import Callable
 
 from app.config.config import get_settings
 from app.db.db import User, create_db_and_tables
-from app.schemas import UserCreate, UserRead, UserUpdate
-from app.users import (
+from app.schemas.schemas import UserCreate, UserRead, UserUpdate
+from app.users.users import (
   SECRET,
   auth_backend,
   current_active_user,
