@@ -1,0 +1,14 @@
+services:
+  tagideas:
+    container_name: TagIdeas_container
+    build:
+      context: .
+    restart: unless-stopped
+    # volumes:
+    # - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=tagIdeas_Docker
+      - APP_GOOGLE_CLIENT_ID = "1089162964131-tfujnvvi40p2ea5caolbi95em7ggoagp.apps.googleusercontent.com"
+      - APP_GOOGLE_CLIENT_SECRET = "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
