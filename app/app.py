@@ -80,7 +80,3 @@ async def error_handler(request: Request, next_call: Callable):
   except Exception as e:
     print(f"MAIN Error Handler Exception: {str(e)}")
     return JSONResponse(status_code=500, content={'error': str(e)})
-
-# @app.on_event("startup")
-# async def on_startup():
-#   await create_db_and_tables()
