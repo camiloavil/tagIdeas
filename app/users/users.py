@@ -11,8 +11,8 @@ from fastapi_users.authentication import (
 from fastapi_users.db import SQLAlchemyUserDatabase
 from httpx_oauth.clients.google import GoogleOAuth2
 
-from app.db.db import User, get_user_db
-from app.config.config import get_settings
+from app.db import User, get_user_db
+from app.config import get_settings
 
 SECRET = get_settings().app_secret
 
