@@ -7,6 +7,8 @@ from fastapi_users.db import (SQLAlchemyBaseOAuthAccountTableUUID,
                               SQLAlchemyBaseUserTableUUID,
                               SQLAlchemyUserDatabase)
 
+from .MySQLAlchemyUserDatabase import MySQLAlchemyUserDatabase
+
 DATABASE_URL = "sqlite+aiosqlite:///./myDB.db"
 
 class Base(DeclarativeBase):
@@ -32,4 +34,14 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     yield session
 
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
-  yield SQLAlchemyUserDatabase(session, User, OAuthAccount)
+  """
+  Asynchronous function to get the user database using the provided session.
+  It takes an AsyncSession object as a parameter and yields a MySQLAlchemyUserDatabase
+  object containing User and OAuthAccount.
+  MySQLAlchemyUserDatabase is a subversion of SQLAlchemyUserDatabase.
+  """
+  yield MySQLAlchemyUserDatabase(session, User, OAuthAccount)
+
+#Original piece of code: It works
+# async def get_user_db(session: AsyncSession = Depends(get_async_session)):
+#   yield SQLAlchemyUserDatabase(session, User, OAuthAccount)

@@ -26,8 +26,10 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
   verification_token_secret = SECRET
 
   async def on_after_login(self, user: User, request: Request | None = None, response: Response | None = None) -> None:
-    # self.user_db.
     print(f"User {user.email} logged in.")
+    if google_oauth_client is not None:
+      user_access_token = await self.user_db.get_oauth_access_token('google', user.id)
+      print(f"User access token: {user_access_token}")
 
   async def on_after_register(self, user: User, request: Request = None):
     print(f"User {user.id} has registered.")
