@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import DeclarativeBase, Mapped, relationship
 from fastapi_users.db import (SQLAlchemyBaseOAuthAccountTableUUID,
                               SQLAlchemyBaseUserTableUUID,
-                              SQLAlchemyUserDatabase)
+                              # SQLAlchemyUserDatabase
+                            )
 
 from .MySQLAlchemyUserDatabase import MySQLAlchemyUserDatabase
 

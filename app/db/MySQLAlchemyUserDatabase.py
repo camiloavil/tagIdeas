@@ -15,7 +15,7 @@ class MySQLAlchemyUserDatabase(SQLAlchemyUserDatabase[UP, ID]):
     print("Init MySQLAlchemyUserDatabase")
     super().__init__(session, user_table, oauth_account_table)
 
-  async def get_oauth_access_token(self, oauth: str, user_id: str) -> Optional[str]:
+  async def get_oauth_access_token(self, oauth: str, user_id: str) -> str | None:
     if self.oauth_account_table is None:
       raise NotImplementedError()
 
