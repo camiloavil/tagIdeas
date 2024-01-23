@@ -1,4 +1,4 @@
-from typing import AsyncGenerator
+from typing import AsyncGenerator, TYPE_CHECKING
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -8,20 +8,39 @@ from fastapi_users.db import (SQLAlchemyBaseOAuthAccountTableUUID,
                               # SQLAlchemyUserDatabase
                             )
 
-from .MySQLAlchemyUserDatabase import MySQLAlchemyUserDatabase
+from .MySQLAlchemyUserDatabase import MySQLAlchemyUserDatabase, MySQLAlchemyIdeaTableUUID
+from sqlalchemy.orm import mapped_column
+from sqlalchemy import String
 
 DATABASE_URL = "sqlite+aiosqlite:///./myDB.db"
 
 class Base(DeclarativeBase):
   pass
 
+class Idea(MySQLAlchemyIdeaTableUUID, Base):
+  pass
+
 class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):
   pass
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
+  # pass
+  if TYPE_CHECKING:  # pragma: no cover
+    first_name:str
+    last_name:str
+    photo_url:str
+    #missing registerDate
+  else:
+    first_name: Mapped[str] = mapped_column(String(length=100), nullable=True)
+    last_name: Mapped[str] = mapped_column(String(length=100), index=True, nullable=True)
+    photo_url: Mapped[str] = mapped_column(String(length=1000), unique=True, nullable=True)
+
   oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
     "OAuthAccount", lazy="joined"
   )
+
+  def __repr__(self) -> str:
+    return f"User(id={self.id!r}, email={self.email!r})"
 
 engine = create_async_engine(DATABASE_URL)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)

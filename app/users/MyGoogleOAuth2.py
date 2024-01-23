@@ -21,7 +21,6 @@ class MyGoogleOAuth2(GoogleOAuth2):
       if response.status_code >= 400:
         raise GetIdEmailError(response.json())
       data = cast(Dict[str, Any], response.json())
-      print(data)
 
       first_name, last_name = next(
         (name.get('givenName'), name.get('familyName')) #displayName

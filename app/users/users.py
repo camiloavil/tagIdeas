@@ -9,7 +9,6 @@ from fastapi_users.authentication import (
   JWTStrategy,
 )
 from fastapi_users.db import SQLAlchemyUserDatabase
-# from httpx_oauth.clients.google import GoogleOAuth2
 
 from app.db import User, get_user_db
 from app.config import get_settings
@@ -32,16 +31,21 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
   reset_password_token_secret = SECRET
   verification_token_secret = SECRET
 
-  async def on_after_login(self, user: User, request: Request | None = None, response: Response | None = None) -> None:
+  async def on_after_login(self, user: User, request: Request = None,
+    response: Response = None
+  ) -> None:
     print(f"User {user.email} logged in.")
-    if google_oauth_client is not None:
-      user_access_token: str = await self.user_db.get_oauth_access_token(google_oauth_client.name, user.id)
-      print(f"User access token: {user_access_token}")
-      info_user = await google_oauth_client.get_OAuth_info(user_access_token)
-      print(f"User info: {info_user}")
 
   async def on_after_register(self, user: User, request: Request = None):
-    print(f"User {user.id} has registered.")
+    if google_oauth_client is not None:
+      user_access_token: str = next((oauth_account.access_token for oauth_account in user.oauth_accounts
+                                    if oauth_account.oauth_name == google_oauth_client.name), None)
+      if user_access_token:
+        print(f"the access token is: {user_access_token}")
+        oauth_user_info = await google_oauth_client.get_OAuth_info(user_access_token)
+        print(f"User info of OAuth: {oauth_user_info}")
+        await self.user_db.update(user, oauth_user_info)
+        print(f"User {user.id} has registered.")
 
   async def on_after_forgot_password(
     self, user: User, token: str, request: Optional[Request] = None
