@@ -45,7 +45,9 @@ async def root():
   return {"message": "Hello!"}
 
 @app.get("/authenticated-route")
-async def authenticated_route(user: User = Depends(current_active_user), session_db: AsyncSession = Depends(get_async_session)):
+async def authenticated_route(user: User = Depends(current_active_user),
+  session_db: AsyncSession = Depends(get_async_session)
+):
   print(user.id)
   statement = (
     select(OAuthAccount)

@@ -26,7 +26,6 @@ google_oauth_client = MyGoogleOAuth2(
 #   client_secret=get_settings().app_google_client_secret,
 #)
 
-
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
   reset_password_token_secret = SECRET
   verification_token_secret = SECRET
@@ -36,16 +35,15 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
   ) -> None:
     print(f"User {user.email} logged in.")
 
-  async def on_after_register(self, user: User, request: Request = None):
+  async def on_after_register(self, user: User, request: Request = None,
+    response: Response = None
+  ) -> None:
     if google_oauth_client is not None:
       user_access_token: str = next((oauth_account.access_token for oauth_account in user.oauth_accounts
                                     if oauth_account.oauth_name == google_oauth_client.name), None)
       if user_access_token:
-        print(f"the access token is: {user_access_token}")
         oauth_user_info = await google_oauth_client.get_OAuth_info(user_access_token)
-        print(f"User info of OAuth: {oauth_user_info}")
         await self.user_db.update(user, oauth_user_info)
-        print(f"User {user.id} has registered.")
 
   async def on_after_forgot_password(
     self, user: User, token: str, request: Optional[Request] = None
