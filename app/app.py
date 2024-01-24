@@ -1,13 +1,13 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
-from typing import Dict, Any, cast
-import httpx
+from typing import Dict, Any
+import uuid
 
 from app.db import User, Idea, create_db_and_tables, get_async_session
 from app.middlewares import ErrorHandler
 from app.config import get_settings
-# from app.schemas import UserRead, UserCreate
 from app import schemas
 from app.users import (
   SECRET,
@@ -17,8 +17,6 @@ from app.users import (
   google_oauth_client,
 )
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import select
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -57,7 +55,7 @@ async def mydata(user: User = Depends(current_active_user),
   print(userfb)
   return userfb
 
-@app.post("/mydata/idea")
+@app.post(path="/mydata/idea/")
 async def post_Idea(idea: schemas.IdeaCreate,
   user: User = Depends(current_active_user),
   session_db: AsyncSession = Depends(get_async_session)
@@ -70,35 +68,37 @@ async def post_Idea(idea: schemas.IdeaCreate,
   await session_db.refresh(idea_db)
   print(idea_db.__dict__)
   return schemas.IdeaRead(**idea_db.__dict__)
-  return {"message": f"'{idea.name}' Idea was created by {user.email}!"}
 
-@app.get("/mydata/idea")
-async def getIdeas(user: User = Depends(current_active_user),
-  # session_db: AsyncSession = Depends(get_async_session)
-) -> list[schemas.IdeaRead]:
-  print(user)
+@app.get("/mydata/idea/",
+  response_model = schemas.IdeaRead | list[schemas.IdeaRead],
+  status_code = status.HTTP_200_OK
+)
+async def getIdeas(id: uuid.UUID = None,
+  user: User = Depends(current_active_user),
+) -> schemas.IdeaRead | list[schemas.IdeaRead]:
+  if id:
+    print(f"Get idea by id -> {id}")
+    idea = next((idea for idea in user.ideas if idea.id == id), None)
+    if idea:
+      return schemas.IdeaRead(**idea.__dict__)
+    else:
+      return JSONResponse(status_code=404, content={"message": "Idea not found"})
+
+  print(f"Get all ideas of {user.email}")
   ideas : list[schemas.IdeaRead] = []
   ideas = [schemas.IdeaRead(**idea.__dict__) for idea in user.ideas]
   return ideas
 
-@app.get("/mydata/idea/{id}")
-async def getIdea(id: str, user: User = Depends(current_active_user),
-) -> schemas.IdeaRead:
-  idea = next((idea for idea in user.ideas if idea.id == id), None)
-  if idea:
-    return schemas.IdeaRead(**idea.__dict__)
-  else:
-    return JSONResponse(status_code=404, content={"message": "Idea not found"})
-
-@app.put("/mydata/idea/{id}")
-async def updateIdea(id: str,
-  idea : schemas.IdeaUpdate,
+@app.put("/mydata/idea/")
+async def updateIdea(new_idea : schemas.IdeaUpdate,
+  id: uuid.UUID = None,
   user: User = Depends(current_active_user),
   session_db: AsyncSession = Depends(get_async_session)
 ) -> schemas.IdeaRead:
   idea = next((idea for idea in user.ideas if idea.id == id), None)
   if idea:
-    idea.content = "new content"
+    idea.name = new_idea.name
+    idea.content = new_idea.content
     session_db.add(idea)
     await session_db.commit()
     await session_db.refresh(idea)
@@ -106,21 +106,16 @@ async def updateIdea(id: str,
   else:
     return JSONResponse(status_code=404, content={"message": "Idea not found"})
 
-@app.delete("/mydata/idea/{id}")
-async def deleteIdea(id: str,
+@app.delete("/mydata/idea/")
+async def deleteIdea(id: uuid.UUID = None,
   user: User = Depends(current_active_user),
   session_db: AsyncSession = Depends(get_async_session)
 ) -> JSONResponse:
   idea = next((idea for idea in user.ideas if idea.id == id), None)
   if idea:
-    session_db.delete(idea)
+    await session_db.delete(idea)
     await session_db.commit()
     return JSONResponse(status_code=200, content = {"message": "Idea deleted"})
   else:
     return JSONResponse(status_code=404, content={"message": "Idea not found"})
-
-@app.get("/testing")
-async def testingOAuth(user: User = Depends(current_active_user)) -> Dict[str, Any]:
-  print(f"{user.email} - {user.id}")
-  return {"testing" : (user.first_name+" "+user.last_name)}
 
