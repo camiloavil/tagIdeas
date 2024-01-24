@@ -38,6 +38,12 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
   async def on_after_register(self, user: User, request: Request = None,
     response: Response = None
   ) -> None:
+    """
+    An asynchronous function that saves additional information of the user on his OAuth provider
+    account. It is called to be performed after user registration.
+    It takes in a user object of type User and optional request and response objects of type
+    Request and Response, respectively. It does not return any value.
+    """
     if google_oauth_client is not None:
       user_access_token: str = next((oauth_account.access_token for oauth_account in user.oauth_accounts
                                     if oauth_account.oauth_name == google_oauth_client.name), None)

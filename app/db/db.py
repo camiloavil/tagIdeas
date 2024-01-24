@@ -34,15 +34,14 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     last_name: Mapped[str] = mapped_column(String(length=100), index=True, nullable=True)
     photo_url: Mapped[str] = mapped_column(String(length=1000), unique=True, nullable=True)
     register_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
- 
+
+  ideas: Mapped[list[Idea]] = relationship("Idea", lazy="joined")
   oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
     "OAuthAccount", lazy="joined"
   )
 
   def __repr__(self) -> str:
-    #check how print all item of json
-    #manualy or whit pydantic
-    return f"User(id={self.id!r},name={self.first_name!r}, email={self.email!r})"
+    return f"User(id={self.id!r},name={self.first_name!r} {self.last_name!r}, email={self.email!r})"
 
 engine = create_async_engine(DATABASE_URL)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)

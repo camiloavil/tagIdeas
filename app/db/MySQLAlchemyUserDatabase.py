@@ -10,13 +10,7 @@ from fastapi_users.models import UP, ID, OAP
 
 from fastapi_users_db_sqlalchemy.generics import GUID
 
-# class MySQLAlchemyIdeas(Generic[ID]):
-#   __tablename__ = "ideas"
-
-#   id: Mapped[UUID_ID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
-
 UUID_ID = uuid.UUID
-
 
 class MySQLAlchemyIdea(Generic[ID]):
   if TYPE_CHECKING:  # pragma: no cover
@@ -27,7 +21,8 @@ class MySQLAlchemyIdea(Generic[ID]):
     name: Mapped[str] = mapped_column(
       String(length=100), index=True, nullable=False
     )
-    content: Mapped[str] = mapped_column(String(length=2000), nullable=False)
+    content: Mapped[str] = mapped_column(
+      String(length=2000), nullable=False)
 
 class MySQLAlchemyIdeaTableUUID(MySQLAlchemyIdea[UUID_ID]):
   __tablename__ = "idea"
