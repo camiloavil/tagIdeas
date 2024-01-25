@@ -3,6 +3,10 @@ import pytest
 
 from fastapi import status
 
+"""
+Tests the routes of "/auth/register" Users. Normally won't be used in production
+"""
+
 user1 = {
   "email": "pedrito@example.com",
   "password": "pepe123",
@@ -45,4 +49,3 @@ async def test_register_users(client_db: httpx.AsyncClient, user: dict, status_c
 #   assert {(user_login[key] == user_get[key]) for key in user_login.keys()} == {True}
 #   assert response.status_code == 200
 
-  

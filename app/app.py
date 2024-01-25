@@ -1,11 +1,14 @@
-from fastapi import FastAPI, Depends
-
 from contextlib import asynccontextmanager
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import FastAPI, status, Depends
+from fastapi.responses import JSONResponse
+# from typing import Dict, Any
+import uuid
 
-from app.config import get_settings
+from app.db import User, Idea, create_db_and_tables, get_async_session
 from app.middlewares import ErrorHandler
-from app.db import User, create_db_and_tables
-# from app.schemas import UserRead, UserCreate
+from app.config import get_settings
+from app import schemas
 from app.users import (
   SECRET,
   auth_backend,
@@ -13,6 +16,8 @@ from app.users import (
   fastapi_users,
   google_oauth_client,
 )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
   await create_db_and_tables()
@@ -32,25 +37,85 @@ app.include_router(
                                  is_verified_by_default = True,
                                  ),
   prefix="/auth/google",
-  tags=["auth"],
+  tags=["OAuth"],
 )
 
 @app.get("/")
 async def root():
   return {"message": "Hello!"}
 
-@app.get("/authenticated-route")
-async def authenticated_route(user: User = Depends(current_active_user)):
-  return {"message": f"Hello {user.email}!"}
+@app.get("/mydata")
+async def mydata(user: User = Depends(current_active_user),
+  session_db: AsyncSession = Depends(get_async_session)
+) -> schemas.UserRead:
+  print(f"user DB model __dict__ method: {user.__dict__}")
+  print(f"user DB model __repr__ method: {user}")
+  userfb = schemas.UserRead(**user.__dict__)
+  print("user fb")
+  print(userfb)
+  return userfb
 
-# @app.middleware("http")
-# async def error_handler(request: Request, next_call: Callable):
-#   try:
-#     start_time = time.time()
-#     response = await next_call(request)
-#     process_time = time.time() - start_time
-#     response.headers["X-Process-Time"] = str(process_time)
-#     return response
-#   except Exception as e:
-#     print(f"MAIN Error Handler Exception: {str(e)}")
-#     return JSONResponse(status_code=500, content={'error': str(e)})
+@app.post(path="/mydata/idea/")
+async def post_Idea(idea: schemas.IdeaCreate,
+  user: User = Depends(current_active_user),
+  session_db: AsyncSession = Depends(get_async_session)
+) -> schemas.IdeaRead:
+  idea_db = Idea(**idea.model_dump())
+  session_db.add(idea_db)
+  user.ideas.append(idea_db)
+  session_db.add(user)
+  await session_db.commit()
+  await session_db.refresh(idea_db)
+  print(idea_db.__dict__)
+  return schemas.IdeaRead(**idea_db.__dict__)
+
+@app.get("/mydata/idea/",
+  response_model = schemas.IdeaRead | list[schemas.IdeaRead],
+  status_code = status.HTTP_200_OK
+)
+async def getIdeas(id: uuid.UUID = None,
+  user: User = Depends(current_active_user),
+) -> schemas.IdeaRead | list[schemas.IdeaRead]:
+  if id:
+    print(f"Get idea by id -> {id}")
+    idea = next((idea for idea in user.ideas if idea.id == id), None)
+    if idea:
+      return schemas.IdeaRead(**idea.__dict__)
+    else:
+      return JSONResponse(status_code=404, content={"message": "Idea not found"})
+
+  print(f"Get all ideas of {user.email}")
+  ideas : list[schemas.IdeaRead] = []
+  ideas = [schemas.IdeaRead(**idea.__dict__) for idea in user.ideas]
+  return ideas
+
+@app.put("/mydata/idea/")
+async def updateIdea(new_idea : schemas.IdeaUpdate,
+  id: uuid.UUID = None,
+  user: User = Depends(current_active_user),
+  session_db: AsyncSession = Depends(get_async_session)
+) -> schemas.IdeaRead:
+  idea = next((idea for idea in user.ideas if idea.id == id), None)
+  if idea:
+    idea.name = new_idea.name
+    idea.content = new_idea.content
+    session_db.add(idea)
+    await session_db.commit()
+    await session_db.refresh(idea)
+    return schemas.IdeaRead(**idea.__dict__)
+  else:
+    return JSONResponse(status_code=404, content={"message": "Idea not found"})
+
+@app.delete("/mydata/idea/")
+async def deleteIdea(id: uuid.UUID = None,
+  user: User = Depends(current_active_user),
+  session_db: AsyncSession = Depends(get_async_session)
+) -> JSONResponse:
+  idea = next((idea for idea in user.ideas if idea.id == id), None)
+  if idea:
+    await session_db.delete(idea)
+    await session_db.commit()
+    return JSONResponse(status_code=200, content = {"message": "Idea deleted"})
+  else:
+    return JSONResponse(status_code=404, content={"message": "Idea not found"})
+

@@ -1,8 +1,8 @@
-# import httpx
-# import pytest
+import httpx
+import pytest
 
-# from typing import Awaitable, Callable
-# from fastapi import status
+from typing import Awaitable, Callable
+from fastapi import status
 
 # """
 # Define routes CRUD for testing

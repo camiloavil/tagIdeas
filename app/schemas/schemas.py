@@ -1,12 +1,31 @@
+from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
+from pydantic import BaseModel
+from datetime import datetime
 import uuid
 
-from fastapi_users import schemas
-
-class UserRead(schemas.BaseUser[uuid.UUID]):
+class UserRead(BaseUser[uuid.UUID]):
+  first_name:str
+  last_name:str
+  photo_url:str
+  register_date:datetime
+  # check only the number of items
+  # oauth_accounts: list
+class UserCreate(BaseUserCreate):
   pass
 
-class UserCreate(schemas.BaseUserCreate):
+class UserUpdate(BaseUserUpdate):
   pass
 
-class UserUpdate(schemas.BaseUserUpdate):
-  pass
+class IdeaRead(BaseModel):
+  id: uuid.UUID
+  name: str
+  content: str
+  register_date:datetime
+
+class IdeaCreate(BaseModel):
+  name: str
+  content: str
+
+class IdeaUpdate(BaseModel):
+  name: str
+  content: str
