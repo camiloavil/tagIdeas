@@ -1,6 +1,7 @@
 import uuid
+from datetime import datetime
 from fastapi_users.db import SQLAlchemyUserDatabase, SQLAlchemyBaseOAuthAccountTable
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, DateTime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, declared_attr, mapped_column
 from typing import Optional, Type, Generic, Dict, Any, TYPE_CHECKING
@@ -17,12 +18,16 @@ class MySQLAlchemyIdea(Generic[ID]):
     id: ID
     name: str
     content: str
+    register_date: datetime
   else:
     name: Mapped[str] = mapped_column(
       String(length=100), index=True, nullable=False
     )
     content: Mapped[str] = mapped_column(
       String(length=2000), nullable=False)
+    register_date: Mapped[datetime] = mapped_column(
+      DateTime, default=datetime.utcnow)
+
 
 class MySQLAlchemyIdeaTableUUID(MySQLAlchemyIdea[UUID_ID]):
   __tablename__ = "idea"

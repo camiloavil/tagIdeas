@@ -20,6 +20,7 @@ class IdeaRead(BaseModel):
   id: uuid.UUID
   name: str
   content: str
+  register_date:datetime
 
 class IdeaCreate(BaseModel):
   name: str
