@@ -17,7 +17,6 @@ from app.users import (
   google_oauth_client,
 )
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
   await create_db_and_tables()
@@ -46,13 +45,8 @@ async def root():
 
 @app.get("/mydata")
 async def mydata(user: User = Depends(current_active_user),
-  session_db: AsyncSession = Depends(get_async_session)
 ) -> schemas.UserRead:
-  print(f"user DB model __dict__ method: {user.__dict__}")
-  print(f"user DB model __repr__ method: {user}")
   userfb = schemas.UserRead(**user.__dict__)
-  print("user fb")
-  print(userfb)
   return userfb
 
 @app.post(path="/mydata/idea/")

@@ -1,26 +1,17 @@
-from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
+from fastapi_users.schemas import BaseUser#, BaseUserCreate, BaseUserUpdate
 from pydantic import BaseModel
 from datetime import datetime
 import uuid
-
-class UserRead(BaseUser[uuid.UUID]):
-  first_name:str
-  last_name:str
-  photo_url:str
-  register_date:datetime
-  # check only the number of items
-  # oauth_accounts: list
-class UserCreate(BaseUserCreate):
-  pass
-
-class UserUpdate(BaseUserUpdate):
-  pass
 
 class IdeaRead(BaseModel):
   id: uuid.UUID
   name: str
   content: str
   register_date:datetime
+
+class IdeaRead_short(BaseModel):
+  id: uuid.UUID
+  name: str
 
 class IdeaCreate(BaseModel):
   name: str
@@ -29,3 +20,24 @@ class IdeaCreate(BaseModel):
 class IdeaUpdate(BaseModel):
   name: str
   content: str
+
+class UserRead(BaseUser[uuid.UUID]):
+  first_name:str
+  last_name:str
+  photo_url:str
+  register_date:datetime
+  ideas: list[IdeaRead_short]
+  # oauth_accounts: list
+
+  def __init__(self, **data):
+    ideas_ :list = data.pop('ideas')
+    ideas :list[IdeaRead_short] = [IdeaRead_short(**idea.__dict__) for idea in ideas_]
+    data['ideas'] = ideas
+    super().__init__(**data)
+
+# class UserCreate(BaseUserCreate):
+#   pass
+
+# class UserUpdate(BaseUserUpdate):
+#   pass
+

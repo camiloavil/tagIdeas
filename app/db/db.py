@@ -41,7 +41,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
   )
 
   def __repr__(self) -> str:
-    return f"User(id={self.id!r},name={self.first_name!r} {self.last_name!r}, email={self.email!r})"
+    return f"User(id={self.id!r},name={self.first_name!r} {self.last_name!r}, email={self.email!r}), N_ideas={len(self.ideas)}"
 
 engine = create_async_engine(DATABASE_URL)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
