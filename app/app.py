@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
-from typing import Dict, Any
+# from typing import Dict, Any
 import uuid
 
 from app.db import User, Idea, create_db_and_tables, get_async_session

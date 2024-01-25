@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Any, TYPE_CHECKING
+from typing import AsyncGenerator, TYPE_CHECKING
 from datetime import datetime
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine

@@ -4,10 +4,9 @@ from fastapi_users.db import SQLAlchemyUserDatabase, SQLAlchemyBaseOAuthAccountT
 from sqlalchemy import ForeignKey, String, DateTime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, declared_attr, mapped_column
-from typing import Optional, Type, Generic, Dict, Any, TYPE_CHECKING
-from sqlalchemy.sql import select
+from typing import Optional, Type, Generic, TYPE_CHECKING
 
-from fastapi_users.models import UP, ID, OAP
+from fastapi_users.models import UP, ID
 
 from fastapi_users_db_sqlalchemy.generics import GUID
 
