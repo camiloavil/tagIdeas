@@ -2,13 +2,13 @@ from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
-# from typing import Dict, Any
 import uuid
 
+from app import schemas
+from app.ideas import crudDB
 from app.db import User, Idea, create_db_and_tables, get_async_session
 from app.middlewares import ErrorHandler
 from app.config import get_settings
-from app import schemas
 from app.users import (
   SECRET,
   auth_backend,
@@ -43,72 +43,67 @@ app.include_router(
 async def root():
   return {"message": "Hello!"}
 
-@app.get("/mydata")
+@app.get("/mydata",
+  response_model = schemas.UserRead,
+  status_code=status.HTTP_200_OK
+  )
 async def mydata(user: User = Depends(current_active_user),
 ) -> schemas.UserRead:
-  userfb = schemas.UserRead(**user.__dict__)
+  userfb = crudDB.get_user_info_db(user)
   return userfb
 
-@app.post(path="/mydata/idea/")
+@app.post(path="/mydata/idea",
+  response_model = schemas.IdeaRead,
+  status_code = status.HTTP_201_CREATED
+)
 async def post_Idea(idea: schemas.IdeaCreate,
   user: User = Depends(current_active_user),
-  session_db: AsyncSession = Depends(get_async_session)
+  # session_db: AsyncSession = Depends(get_async_session)
 ) -> schemas.IdeaRead:
-  idea_db = Idea(**idea.model_dump())
-  session_db.add(idea_db)
-  user.ideas.append(idea_db)
-  session_db.add(user)
-  await session_db.commit()
-  await session_db.refresh(idea_db)
-  print(idea_db.__dict__)
-  return schemas.IdeaRead(**idea_db.__dict__)
-
-@app.get("/mydata/idea/",
+  try:
+    return await crudDB.set_idea_db(user, idea)
+  except:
+    return JSONResponse(status_code=500, content={"message": "Idea not created"})
+  
+@app.get("/mydata/idea",
   response_model = schemas.IdeaRead | list[schemas.IdeaRead],
   status_code = status.HTTP_200_OK
 )
-async def getIdeas(id: uuid.UUID = None,
+async def getIdeas(id: uuid.UUID | None = None,
   user: User = Depends(current_active_user),
 ) -> schemas.IdeaRead | list[schemas.IdeaRead]:
   if id:
-    print(f"Get idea by id -> {id}")
-    idea = next((idea for idea in user.ideas if idea.id == id), None)
+    idea = crudDB.get_idea_db(user, id)
     if idea:
-      return schemas.IdeaRead(**idea.__dict__)
-    else:
-      return JSONResponse(status_code=404, content={"message": "Idea not found"})
+      return idea
+    return JSONResponse(status_code=404, content={"message": "Idea not found"})
+  return crudDB.get_ideas_db(user)
 
-  print(f"Get all ideas of {user.email}")
-  ideas : list[schemas.IdeaRead] = []
-  ideas = [schemas.IdeaRead(**idea.__dict__) for idea in user.ideas]
-  return ideas
-
-@app.put("/mydata/idea/")
-async def updateIdea(new_idea : schemas.IdeaUpdate,
+@app.put("/mydata/idea/",
+  response_model = schemas.IdeaRead,
+  status_code = status.HTTP_202_ACCEPTED
+)
+async def updateIdea(
+  new_idea : schemas.IdeaUpdate,
   id: uuid.UUID = None,
   user: User = Depends(current_active_user),
-  session_db: AsyncSession = Depends(get_async_session)
+  # session_db: AsyncSession = Depends(get_async_session)
 ) -> schemas.IdeaRead:
-  idea = next((idea for idea in user.ideas if idea.id == id), None)
+  idea = await crudDB.update_idea_db(user, new_idea, id)
   if idea:
-    idea.name = new_idea.name
-    idea.content = new_idea.content
-    session_db.add(idea)
-    await session_db.commit()
-    await session_db.refresh(idea)
-    return schemas.IdeaRead(**idea.__dict__)
+    return idea
   else:
     return JSONResponse(status_code=404, content={"message": "Idea not found"})
 
-@app.delete("/mydata/idea/")
+@app.delete("/mydata/idea/",
+  status_code = status.HTTP_200_OK,
+  response_class = JSONResponse
+)
 async def deleteIdea(id: uuid.UUID = None,
   user: User = Depends(current_active_user),
-  session_db: AsyncSession = Depends(get_async_session)
+  # session_db: AsyncSession = Depends(get_async_session)
 ) -> JSONResponse:
-  idea = next((idea for idea in user.ideas if idea.id == id), None)
-  if idea:
-    await session_db.delete(idea)
-    await session_db.commit()
+  if await crudDB.delete_idea_db(user, id):
     return JSONResponse(status_code=200, content = {"message": "Idea deleted"})
   else:
     return JSONResponse(status_code=404, content={"message": "Idea not found"})

@@ -1,13 +1,24 @@
 from fastapi_users.schemas import BaseUser#, BaseUserCreate, BaseUserUpdate
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 import uuid
+
+class taggedUser(BaseModel):
+  email_tagged: EmailStr
+  is_writeable: bool = False
+  is_deleteable: bool = False
+
+class taggedUserCreate(BaseModel):
+  email_tagged: EmailStr
+  is_writeable: bool = False
+  is_deleteable: bool = False
 
 class IdeaRead(BaseModel):
   id: uuid.UUID
   name: str
   content: str
   register_date:datetime
+  tagged_user: list[taggedUser] = []
 
 class IdeaRead_short(BaseModel):
   id: uuid.UUID
@@ -16,6 +27,7 @@ class IdeaRead_short(BaseModel):
 class IdeaCreate(BaseModel):
   name: str
   content: str
+  tagged_user: list[taggedUserCreate] = []
 
 class IdeaUpdate(BaseModel):
   name: str
