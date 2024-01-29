@@ -8,6 +8,8 @@ Tests the routes of "/auth/register" Users. Normally won't be used in production
 """
 
 user1 = {
+  "first_name": "Pedro",
+  "last_name": "Carrizo",
   "email": "pedrito@example.com",
   "password": "pepe123",
 }

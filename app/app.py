@@ -1,12 +1,13 @@
 from contextlib import asynccontextmanager
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
 import uuid
+# from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import schemas
 from app.ideas import crudDB
-from app.db import User, Idea, create_db_and_tables, get_async_session
+# from app.db import User, Idea, create_db_and_tables, get_async_session
+from app.db import User, create_db_and_tables
 from app.middlewares import ErrorHandler
 from app.config import get_settings
 from app.users import (
@@ -39,6 +40,12 @@ app.include_router(
   tags=["OAuth"],
 )
 
+app.include_router(
+  fastapi_users.get_register_router(schemas.UserRead, schemas.UserCreate),
+  prefix="/auth",
+  tags=["Auth"],
+)
+
 @app.get("/")
 async def root():
   return {"message": "Hello!"}
@@ -64,7 +71,7 @@ async def post_Idea(idea: schemas.IdeaCreate,
     return await crudDB.set_idea_db(user, idea)
   except:
     return JSONResponse(status_code=500, content={"message": "Idea not created"})
-  
+
 @app.get("/mydata/idea",
   response_model = schemas.IdeaRead | list[schemas.IdeaRead],
   status_code = status.HTTP_200_OK
