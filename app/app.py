@@ -74,9 +74,11 @@ async def post_Idea(idea: schemas.IdeaCreate,
 ) -> schemas.IdeaRead:
   try:
     return await crudDB.set_idea_db(session_db, user, idea)
+  except crudDB.DuplicateIdeaName:
+    return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={"message": f"Idea's '{idea.name}'name already exists"})
   except Exception as e:
     print(f"Idea not created. Exception: {str(e)}")
-    return JSONResponse(status_code=500, content={"message": "Idea not created"})
+    return JSONResponse(status_code=500, content={"message": "internal server error. Idea not created"})
 
 @app.get("/mydata/idea",
   response_model = schemas.IdeaRead | list[schemas.IdeaRead],

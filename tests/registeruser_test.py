@@ -113,17 +113,18 @@ async def test_getInfo_authenticatedUser(authenticated_client: httpx.AsyncClient
     (idea2, status.HTTP_201_CREATED, "add Idea 2"),
     (idea3, status.HTTP_201_CREATED, "add Idea 3"),
     (idea4, status.HTTP_201_CREATED, "add Idea 4"),
-    (idea1, status.HTTP_422_UNPROCESSABLE_ENTITY, "Idea's name must be unique"),
+    (idea1, status.HTTP_409_CONFLICT, "Idea's name must be unique"),
   ],
 )
 async def test_SetIdeas(authenticated_client: httpx.AsyncClient, idea: dict, status_code: status, msj: str):
   response = await authenticated_client.post("/mydata/idea" , json = idea)
   print(response.json())
   assert response.status_code == status_code, msj
-  idea_get :dict[str, any] = response.json()
-  assert all(idea_get[key] == idea[key] for key in idea.keys()) is True, "Data should be the same"
-  print(f"Checking this idea: {idea_get['name']}")
-
+  if status_code == status.HTTP_201_CREATED:
+    idea_get :dict[str, any] = response.json()
+    assert all(idea_get[key] == idea[key] for key in idea.keys()) is True, "Data should be the same"
+    print(f"Checking this idea: {idea_get['name']}")
+  
 @pytest.mark.asyncio
 async def test_GetIdeas(authenticated_client: httpx.AsyncClient):
   """
@@ -135,7 +136,7 @@ async def test_GetIdeas(authenticated_client: httpx.AsyncClient):
   assert response.status_code == 200
   assert isinstance(response.json(), list), "Response is not a list"
   user_ideas :list[dict[str, str]] = response.json()
-  # assert len(user_ideas) == 4, "The number of ideas is not 4"
+  assert len(user_ideas) == 4, "The number of ideas is not 4"
   items = ('id', 'name', 'content','register_date','tagged_user')
   for idea_got in user_ideas:
     assert all(key in idea_got for key in items), "Some keys are missing"

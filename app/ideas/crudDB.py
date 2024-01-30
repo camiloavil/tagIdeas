@@ -6,6 +6,11 @@ from app.db import User, Idea#, get_async_session
 from app import schemas
 
 
+class DuplicateIdeaName(Exception):
+  def __init__(self, message="Idea's name already exists"):
+    self.message = message
+    super().__init__(self.message)
+
 def get_user_info_db(user: User) -> schemas.UserRead:
   userfb = schemas.UserRead(**user.__dict__)
   return userfb
@@ -15,21 +20,23 @@ async def set_idea_db(
   user : User,
   idea: schemas.IdeaCreate,
 ) -> schemas.IdeaRead:
-  print("Testing")
+  print("Testing save Idea")
   print(idea)
-  print(idea.model_dump())
+  name = next((idea_db.name for idea_db in user.ideas if idea_db.name == idea.name), None)
+  print(name)
+  if name:
+    raise DuplicateIdeaName(f"Idea's name '{idea.name}' already exists")
 
   idea_db = Idea(**idea.model_dump())
   session_db.add(idea_db)
   user.ideas.append(idea_db)
-
   session_db.add(user)
   try:
     await session_db.commit()
     await session_db.refresh(idea_db)
   except Exception as e:
     print(f"Idea not created. Exception: {str(e)}")
-    # raise
+    raise Exception("Idea not created")
   return schemas.IdeaRead(**idea_db.__dict__)
 
 def get_idea_db(
