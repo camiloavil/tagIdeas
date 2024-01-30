@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 import uuid
 
-from app.db import User, Idea, get_async_session
+from app.db import User, Idea#, get_async_session
 from app import schemas
 
 
@@ -11,9 +11,9 @@ def get_user_info_db(user: User) -> schemas.UserRead:
   return userfb
 
 async def set_idea_db(
+  session_db: AsyncSession,
   user : User,
   idea: schemas.IdeaCreate,
-  session_db: AsyncSession = Depends(get_async_session),
 ) -> schemas.IdeaRead:
   print("Testing")
   print(idea)
@@ -52,10 +52,10 @@ def get_ideas_db(user : User) -> list[schemas.IdeaRead]:
   return ideas
 
 async def update_idea_db(
+  session_db: AsyncSession,
   user: User,
   new_idea : schemas.IdeaUpdate,
   id: uuid.UUID = None,
-  session_db: AsyncSession = Depends(get_async_session)
 )-> schemas.IdeaRead | None:
   idea = next((idea for idea in user.ideas if idea.id == id), None)
   if idea:
@@ -72,9 +72,9 @@ async def update_idea_db(
     return None
 
 async def delete_idea_db(
+  session_db: AsyncSession,
   user: User,
   id: uuid.UUID,
-  session_db: AsyncSession = Depends(get_async_session)
 )-> bool:
   idea = next((idea for idea in user.ideas if idea.id == id), None)
   if idea:

@@ -38,12 +38,19 @@ async def clean_db():
 
 @pytest.fixture(scope="session")
 async def init_db():
+  """
+  Fixture to initialize the database for a test session.
+  """
   await create_db_and_tables()
   yield
   clean_db()
 
 @pytest.fixture(scope="session")
 async def client_db(init_db):
+  """
+  Fixture for creating a client database in the session scope.
+  This function is asynchronous and yields a client for testing purposes.
+  """
   print("client Started DB")
   app.dependency_overrides[get_async_session] = override_get_async_session
   async with httpx.AsyncClient(app=app, base_url="http://test.io") as client:
@@ -51,30 +58,12 @@ async def client_db(init_db):
 
 @pytest.fixture(scope="session")
 async def client():
+  """
+  Fixture for creating an async client for session scope.
+  """
   print("simple client Started")
   async with httpx.AsyncClient(app=app, base_url="http://test.io") as client:
     yield client
-
-# @pytest.fixture
-# def user_login() -> dict[str, str]:
-#     return {
-#         "email": "user@example.com",
-#         "password": "string"
-#     }
-
-# @pytest.fixture
-# async def authenticated_client(client: httpx.AsyncClient, user_login: dict[str, str]) -> httpx.AsyncClient:
-#     await client.post("/auth/register", json=user_login)
-#     user_data = {
-#         "username": user_login["email"],
-#         "password": user_login["password"],
-#     }
-#     response = await client.post("/auth/jwt/login", data=user_data)
-#     token = response.json()
-#     # print(token)
-#     client.headers["Authorization"] = f"Bearer {token['access_token']}"
-#     yield client
-
 
 # GetAuthenticatedAsyncClient = Callable[[dict], Awaitable[httpx.AsyncClient]]
 
