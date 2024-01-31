@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
-from fastapi_users.db import SQLAlchemyUserDatabase, SQLAlchemyBaseOAuthAccountTable
-from sqlalchemy import ForeignKey, String, DateTime
+from fastapi_users.db import SQLAlchemyUserDatabase, SQLAlchemyBaseOAuthAccountTable, SQLAlchemyBaseUserTable
+from sqlalchemy import ForeignKey, String, DateTime, Boolean
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, declared_attr, mapped_column
 from typing import Optional, Type, Generic, TYPE_CHECKING
@@ -11,6 +11,35 @@ from fastapi_users.models import UP, ID
 from fastapi_users_db_sqlalchemy.generics import GUID
 
 UUID_ID = uuid.UUID
+
+class MySQLAlchemyTaggedUser(Generic[ID]):
+  if TYPE_CHECKING:  # pragma: no cover
+    email_tagged: str
+    is_writeable: bool
+    is_deleteable: bool
+  else:
+    email_tagged: Mapped[str] = mapped_column(String(length=320), index=True, nullable=False)
+    is_writeable: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_deleteable: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+class MySQLAlchemyTaggedUserTableUUID(MySQLAlchemyTaggedUser[UUID_ID]):
+  __tablename__ = "tagged_user"
+  if TYPE_CHECKING:  # pragma: no cover
+    id: UUID_ID
+    idea_owner_id: UUID_ID
+    user_tagged_id: UUID_ID
+  else:
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    @declared_attr
+    def idea_owner_id(cls) -> Mapped[GUID]:
+      return mapped_column(
+        GUID, ForeignKey("idea.id", ondelete="cascade"), nullable=False
+      )
+    @declared_attr
+    def user_tagged_id(cls) -> Mapped[GUID]:
+      return mapped_column(
+        GUID, ForeignKey("user.id", ondelete="cascade"), nullable=True
+      )
 
 class MySQLAlchemyIdea(Generic[ID]):
   if TYPE_CHECKING:  # pragma: no cover
@@ -35,13 +64,25 @@ class MySQLAlchemyIdeaTableUUID(MySQLAlchemyIdea[UUID_ID]):
     user_owner_id: UUID_ID
   else:
     id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
-
     @declared_attr
     def user_owner_id(cls) -> Mapped[GUID]:
       return mapped_column(
         GUID, ForeignKey("user.id", ondelete="cascade"), nullable=False
       )
 
+class MySQLAlchemyBaseUserTableUUID(SQLAlchemyBaseUserTable[UUID_ID]):
+  if TYPE_CHECKING:  # pragma: no cover
+    id: UUID_ID
+    first_name:str
+    last_name:str
+    photo_url:str
+    register_date:datetime
+  else:
+    id: Mapped[UUID_ID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    first_name: Mapped[str] = mapped_column(String(length=100), nullable=True)
+    last_name: Mapped[str] = mapped_column(String(length=100), index=True, nullable=True)
+    photo_url: Mapped[str] = mapped_column(String(length=1000), unique=True, nullable=True)
+    register_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 class MySQLAlchemyUserDatabase(SQLAlchemyUserDatabase[UP, ID]):
   def __init__(
