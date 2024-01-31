@@ -20,6 +20,12 @@ class IdeaRead(BaseModel):
   register_date:datetime
   tagged_user: list[taggedUser] = []
 
+  def __init__(self, **data):
+    tagged_user_ :list = data.pop('tagged_user')
+    tagged_user :list[taggedUser] = [taggedUser(**idea.__dict__) for idea in tagged_user_]
+    data['tagged_user'] = tagged_user
+    super().__init__(**data)
+
 class IdeaRead_short(BaseModel):
   id: uuid.UUID
   name: str
@@ -28,6 +34,9 @@ class IdeaCreate(BaseModel):
   name: str
   content: str
   tagged_user: list[taggedUserCreate] = []
+
+  def idea_dump(self):
+    return self.model_dump(exclude={'tagged_user'})
 
 class IdeaUpdate(BaseModel):
   name: str
@@ -39,7 +48,6 @@ class UserRead(BaseUser[uuid.UUID]):
   photo_url:str | None
   register_date:datetime
   ideas: list[IdeaRead_short]
-  # oauth_accounts: list
 
   def __init__(self, **data):
     ideas_ :list = data.pop('ideas')

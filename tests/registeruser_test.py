@@ -29,11 +29,20 @@ idea1 = {
 }
 idea2 = {
   "name": "Idea 2",
-  "content": "Idea 2 content"
+  "content": "Idea 2 content",
+  "tagged_user": [{
+    "email_tagged": "pedrito@example.com",
+  }]
 }
 idea3 = {
   "name": "Idea 3",
-  "content": "Idea 3 content"
+  "content": "Idea 3 content",
+  "tagged_user": [{
+    "email_tagged": "pedrito@example.com",
+  },{
+    "email_tagged": "maria_lotel@example.com",
+    "is_writeable": True
+  }]
 }
 idea4 = {
   "name": "Idea 4",
@@ -116,15 +125,20 @@ async def test_getInfo_authenticatedUser(authenticated_client: httpx.AsyncClient
     (idea1, status.HTTP_409_CONFLICT, "Idea's name must be unique"),
   ],
 )
-async def test_SetIdeas(authenticated_client: httpx.AsyncClient, idea: dict, status_code: status, msj: str):
+async def test_SetIdeas(authenticated_client: httpx.AsyncClient, idea: dict[str, str], status_code: status, msj: str):
   response = await authenticated_client.post("/mydata/idea" , json = idea)
   print(response.json())
   assert response.status_code == status_code, msj
   if status_code == status.HTTP_201_CREATED:
     idea_get :dict[str, any] = response.json()
-    assert all(idea_get[key] == idea[key] for key in idea.keys()) is True, "Data should be the same"
+    assert all(idea_get[key] == idea[key] for key in idea.keys() if key != "tagged_user") is True, "Data should be the same"
     print(f"Checking this idea: {idea_get['name']}")
-  
+  if 'tagged_user' in idea:
+    print("Idea has tagged users.")
+    tags_ : list[dict[str, str]] = idea["tagged_user"]
+    tags_get : list[dict[str, str]] = idea_get["tagged_user"]
+    assert len(tags_get) == len(tags_)
+
 @pytest.mark.asyncio
 async def test_GetIdeas(authenticated_client: httpx.AsyncClient):
   """

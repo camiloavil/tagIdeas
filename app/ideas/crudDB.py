@@ -1,8 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends
 import uuid
 
-from app.db import User, Idea#, get_async_session
+from app.db import User, Idea, TaggedUser#, get_async_session
 from app import schemas
 
 
@@ -21,13 +20,23 @@ async def set_idea_db(
   idea: schemas.IdeaCreate,
 ) -> schemas.IdeaRead:
   print("Testing save Idea")
-  print(idea)
   name = next((idea_db.name for idea_db in user.ideas if idea_db.name == idea.name), None)
-  print(name)
   if name:
     raise DuplicateIdeaName(f"Idea's name '{idea.name}' already exists")
 
-  idea_db = Idea(**idea.model_dump())
+  idea_db = Idea(**idea.idea_dump())
+  # print(f"tags: {idea.tagged_user}")
+  tags_db : list[TaggedUser] = [TaggedUser(**tag.model_dump()) for tag in idea.tagged_user]
+  # print(f"tags_db: {tags_db}")
+  # print(idea_db.__dict__)
+
+  # for tag_db in tags_db:
+  #   session_db.add(tag_db)
+  #   idea_db.tagged_user.append(tag_db)
+
+  for tag_db in tags_db:
+    idea_db.tagged_user.append(tag_db)
+  session_db.add_all(tags_db)
   session_db.add(idea_db)
   user.ideas.append(idea_db)
   session_db.add(user)
@@ -43,7 +52,7 @@ def get_idea_db(
   user: User,
   id: uuid.UUID
 ) -> schemas.IdeaRead | None:
-  print(f"Get idea by id -> {id}")
+  # print(f"Get idea by id -> {id}")
   idea = next((idea for idea in user.ideas if idea.id == id), None)
   if idea:
     return schemas.IdeaRead(**idea.__dict__)
@@ -52,10 +61,9 @@ def get_idea_db(
 def get_ideas_db(user : User) -> list[schemas.IdeaRead]:
   print(f"Get all ideas of {user.email}")
   ideas : list[schemas.IdeaRead] = [schemas.IdeaRead(**idea.__dict__) for idea in user.ideas]
-
-  print("Test")
-  for idea in user.ideas:
-    print(idea.__dict__)
+  # print("Test")
+  # for idea in user.ideas:
+  #   print(idea.__dict__)
   return ideas
 
 async def update_idea_db(
