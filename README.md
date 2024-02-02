@@ -32,8 +32,9 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#requirements">Requirements</a></li>
+        <li><a href="#run-with-python-virtual-enviroment">Run with python virtual enviroment</a></li>
+        <li><a href="#run-with-docker-container">Run with Docker container</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -48,7 +49,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-"TagIdeas" is an application designed for storing and sharing concise ideas. With the flexibility to tag others, you can personalize your idea-sharing experience. Store thoughts in a way that suits you, and recipients of tags will receive email notifications for seamless collaboration and communication. Dive into a user-friendly platform that encourages creativity and collaboration through the simple yet powerful act of sharing ideas.
+"TagIdeas" is an application designed for storing and sharing ideas. With the flexibility to tag others, you can store thoughts in a way that suits you, and recipients of tags will receive email notifications for seamless collaboration and communication. Dive into a user-friendly platform that encourages creativity and collaboration through the simple yet powerful act of sharing ideas.
 
 "TagIdeas" is a project focused on learning and practicing backend and frontend development skills, incorporating tools like SQLAlchemy. It enables the storage and sharing of short ideas with tags. Future plans include frontend development using Vue or Svelte.
 
@@ -62,9 +63,6 @@
 - [![FastAPI][FastAPI]][FastAPI-url]
 - [![SQLAlchemy][SQLAlchemy]][SQLAlchemy-url]
 - [![fastapiusers][fastapiusers]][fastapiusers-url]
-<!-- - [![Angular][Angular.io]][Angular-url] -->
-<!-- - [![Svelte][Svelte.dev]][Svelte-url] -->
-<!-- - [![Laravel][Laravel.com]][Laravel-url] -->
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -72,45 +70,74 @@
 
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+To run "TagIdeas" locally, There are two methods available: using a Python virtual environment and utilizing Docker to build and run the container using the provided Dockerfile.
 
-### Prerequisites
+## Requirements
 
-This is an example of how to list things you need to use the software and how to install them.
+- Python 3.6+
+<br/>
+or
+<br/>
+- Docker
 
-- npm
-  ```sh
-  npm install npm@latest -g
-  ```
+## Run with python virtual enviroment
 
-### Installation
+Clone the Repository:
+```
+git clone https://github.com/camiloavil/tagIdeas
+cd TagIdeas
+```
+Create and Activate Virtual Environment:
+```
+python -m venv venv
+source venv/bin/activate
+```
+Install Dependencies:
+```
+pip install -r requirements.txt
+```
+Set Environment Variables:
+```
+APP_NAME="TagIdeas" APP_GOOGLE_CLIENT_ID="client ID from Google"
+```
+Run the Application:
+```
+python main.py
+```
 
-_Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
+## Run with Docker container
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/your_username_/Project-Name.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = "ENTER YOUR API";
-   ```
+the easy way to run "tagIdeas" is in a docker container. you can create a `docker-compose.yml` like the next example. and run it.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+### docker-compose.yml
+```
+services:
+  tagideas:
+    container_name: TagIdeas
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=tagIdeas
+      - APP_GOOGLE_CLIENT_ID='client ID from Google'
+      - APP_GOOGLE_CLIENT_SECRET='client secret from Google'
+      - APP_LIFETIME=3600
 
+```
+### build and run container
+
+
+```
+docker compose up -d
+```
 <!-- USAGE EXAMPLES -->
 
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+
+_For more examples, please refer to the [Documentation](https://tagideas.camiloavil.com/docs)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -118,15 +145,16 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 ## Roadmap
 
-- [x] Add Changelog
-- [x] Add back to top links
-- [ ] Add Additional Templates w/ Examples
-- [ ] Add "components" document to easily copy & paste sections of the readme
-- [ ] Multi-language Support
-  - [ ] Chinese
-  - [ ] Spanish
+- [x] Set the API with FastAPI
+- [x] Set user authentication using Bearer token and JWT with fastAPIusers
+- [x] Add OAuth2 authentication
+- [x] Set CRUD of Ideas models
+- [x] Add relations of tagged users to Ideas models
+- [ ] Integrate a frontend GUI using Vue or Svelte
+  - [ ]
+  - [ ] 
 
-See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
+<!-- See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues). -->
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -134,15 +162,14 @@ See the [open issues](https://github.com/othneildrew/Best-README-Template/issues
 
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+**Contributions** are the essence of the open-source community, fostering learning, inspiration, and creation. Your contributions are highly valued.
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
+If you have ideas to improve this project, fork the repository and submit a pull request. Alternatively, open an issue labeled "enhancement." Don't forget to star the project. Thank you once more!
 
 1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
+2. Create your Feature Branch (`git checkout -b feature/MyFeature`)
+3. Commit your Changes (`git commit -m 'Add some MyFeature'`)
+4. Push to the Branch (`git push origin feature/MyFeature`)
 5. Open a Pull Request
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -159,9 +186,9 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 ## Contact
 
-Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
+Camilo Avila - [@camilo_avil](https://twitter.com/camilo_avil) - camilo.avil@gmail.com
 
-Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
+Project Link: [https://github.com/camiloavil/tagIdeas](https://github.com/camiloavil/tagIdeas)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -195,8 +222,9 @@ Use this space to list resources you find helpful and would like to give credit 
 [issues-url]: https://github.com/othneildrew/Best-README-Template/issues
 [license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
 [license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
+
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/othneildrew
+[linkedin-url]: https://www.linkedin.com/in/camilo-avila-3a3567272/
 
 [Python]: https://img.shields.io/badge/python-35495E?style=for-the-badge&logo=python&logoColor=4FC08D
 [Python-url]: https://www.python.org/
