@@ -1,7 +1,7 @@
 <a name="readme-top"></a>
 
-[![Stargazers][stars-shield]][stars-url]
-[![MIT License][license-shield]][license-url]
+<!-- [![Stargazers][stars-shield]][stars-url] -->
+<!-- [![MIT License][license-shield]][license-url] -->
 [![LinkedIn][linkedin-shield]][linkedin-url]
 <!-- PROJECT LOGO -->
 <br />
@@ -75,9 +75,6 @@ To run "TagIdeas" locally, There are two methods available: using a Python virtu
 ## Requirements
 
 - Python 3.6+
-<br/>
-or
-<br/>
 - Docker
 
 ## Run with python virtual enviroment
@@ -127,7 +124,6 @@ services:
 ```
 ### build and run container
 
-
 ```
 docker compose up -d
 ```
@@ -135,9 +131,20 @@ docker compose up -d
 
 ## Usage
 
+To run "TagIdeas" locally, it is essential to set specific environment variables, whether using the Docker container or executing with Python.
+
+- `APP_NAME="TagIdeas"` &nbsp; _Name of the app_
+- `PORT=8000` &nbsp; _Port on which the app runs_
+- `APP_SECRET="PASS_SECRET"` &nbsp; _Secret key for app security_
+- `APP_LIFETIME=3600` &nbsp; _Lifetime of the user session_
+- `APP_GOOGLE_CLIENT_ID="ClientID app from Google"` &nbsp; _Google app's Client ID -  OAuth2_
+- `APP_GOOGLE_CLIENT_SECRET="ClientSecret app from Google"` &nbsp; _Google app's Client Secret - OAuth2_
 
 
-_For more examples, please refer to the [Documentation](https://tagideas.camiloavil.com/docs)_
+## Online Testing
+You can also test "TagIdeas" online by visiting the url [https://tagideas.camiloavil.com](https://tagideas.camiloavil.com). Explore the application's features and experience seamless idea sharing and tagging in action!
+
+_For more infomation about the API end points, please refer to the [Documentation](https://tagideas.camiloavil.com/docs)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -151,8 +158,9 @@ _For more examples, please refer to the [Documentation](https://tagideas.camiloa
 - [x] Set CRUD of Ideas models
 - [x] Add relations of tagged users to Ideas models
 - [ ] Integrate a frontend GUI using Vue or Svelte
-  - [ ]
-  - [ ] 
+  - [ ] Integrate login form whit OAuth2 Google "Google Sing In"
+  - [ ] Implement the main app design displaying ideas and tags
+- [ ] Implement a background task to send emails when a user is tagged in an idea
 
 <!-- See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues). -->
 
@@ -196,16 +204,13 @@ Project Link: [https://github.com/camiloavil/tagIdeas](https://github.com/camilo
 
 ## Acknowledgments
 
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
+Big shoutouts to the awesome tools that made this project possible! A huge thanks to:
 
-- [Choose an Open Source License](https://choosealicense.com)
-- [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-- [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
-- [Malven's Grid Cheatsheet](https://grid.malven.co/)
-- [Img Shields](https://shields.io)
-- [GitHub Pages](https://pages.github.com)
-- [Font Awesome](https://fontawesome.com)
-- [React Icons](https://react-icons.github.io/react-icons/search)
+- [FastAPI][FastAPI-url]
+- [FastAPIUsers][fastapiusers-url]
+- [SQLAlchemy][SQLAlchemy-url]
+
+you guys rock! Your incredible work laid the groundwork for so many projects, and I'm stoked to give credit where it's due. Much love! 🚀💙
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
